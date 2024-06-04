@@ -30,7 +30,6 @@ int processNum = 0;
 
 void create_Process();
 void init_readyQueue();
-//void init_waitingQueue(); 구현 못함 
 
 void FCFS();
 void NonPreemptive_SJF();
@@ -56,7 +55,8 @@ void compare();
 
 void create_Process() {
     srand(time(NULL));
-    processNum = rand() % MAX_PROCESSES + 1; // 여러 결과 보기 위해 Process 개수 랜덤 
+	processNum = rand() % MAX_PROCESSES + 1; // 여러 결과 보기 위해 Process 개수 랜덤 
+    //processNum = MAX_PROCESSES; // 프로세스 개수 지정 
     for (int i = 0; i < processNum; i++) {
         processes[i].PID = i + 1;
         processes[i].arrivalTime = rand() % 20; // Arrival Time 0 ~ 20
@@ -78,7 +78,7 @@ void create_Process() {
     }
 }
 
-void init_readyQueue() { // 잡큐에 이미 도착한 프로세스를 레디큐에 넣는다고 가정. FCFS와 RR을 위해 arrival time 먼저 도착한 순으로 정렬
+void init_readyQueue() { // 잡큐에 이미 도착한 프로세스를 레디큐에 넣는다고 가정. 먼저 도착한 순으로 정렬
     int i;
     for (i = 0; i < processNum; i++)
         readyQueue[i] = processes[i]; // 모든 알고리즘 수행을 위해 copy
@@ -87,7 +87,7 @@ void init_readyQueue() { // 잡큐에 이미 도착한 프로세스를 레디큐에 넣는다고 가정
 	int j, k;
 	for(j = processNum - 1; j > 0; j--){
 		for(k = 0 ; k < j; k++){
-			if(readyQueue[k].arrivalTime > readyQueue[k + 1].arrivalTime){ //오름차순 정렬 
+			if(readyQueue[k].arrivalTime > readyQueue[k + 1].arrivalTime){ //복사해 온 프로세스들을 오름차순 정렬 
 				temp = readyQueue[k + 1];
 				readyQueue[k + 1] = readyQueue[k];
 				readyQueue[k] = temp;
@@ -343,7 +343,10 @@ void RoundRobin() {
                     totalTurnaroundTime += readyQueue[i].turnaroundTime;
                     completedCount++;
                 }
-                ganttChart[ganttIndex++] = readyQueue[i].PID;
+
+                for(int j = 0; j < timeSlice; j++){ //타임퀀텀 보이게 
+                	ganttChart[ganttIndex++] = readyQueue[i].PID;
+         		}
             }
         }
         if (run == 0) { //실행가능한 process가 미존재하면, 대기
@@ -357,15 +360,8 @@ void RoundRobin() {
 
 void printGantt(int ganttChart[], int n) {
     printf("\nGantt Chart:\n|");
-
-    if (n > 0) {
-        printf(" P%d |", ganttChart[0]);
-    }
-
-    for (int i = 1; i < n; i++) {
-        if (ganttChart[i] != ganttChart[i-1]) { //이전 간트 차트와 같은 process가 아닐 때 
-            printf(" P%d |", ganttChart[i]);  // 새로운 process 출력 
-        }
+    for (int i = 0; i < n; i++) {
+        printf(" P%d |", ganttChart[i]);
     }
     printf("\n\n");
 }
@@ -378,7 +374,7 @@ void evaluation(int alg, int totalWaitingTime, int totalTurnaroundTime, int proc
     printf("Average Waiting Time: %.2f\n", evalTable[alg].AverageWT);
     printf("Average Turnaround Time: %.2f\n", evalTable[alg].AverageTT);
 }
-    
+
 void compare(){
     float minWT = evalTable[0].AverageWT; //가장 작은 WT 색출
     
